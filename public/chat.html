@@ -11,6 +11,11 @@
     <span>Chat</span>
     <input type="text" id="message_input" />
     <button type="button">Enviar</button>
+
+    <h1>Mensagens</h1>
+    <div id="messages">
+    
+    </div>
 </body>
 <script>
     const socket = io();
@@ -22,14 +27,41 @@
     socket.emit("select_room", {
         username,
         room
+    }, response => {
+        response.forEach((message) => createMessage(message))
     });
 
     document.getElementById('message_input').addEventListener("keypress", (event)=> {
         if(event.key === 'Enter') {
-            const message = event.target.value
-            console.log('teste',message)
+            const message = event.target.value;
+
+            const data = {
+                room,
+                message,
+                username
+            }
+            
+            socket.emit("message", data)
+
+            event.target.value = ""
         }
     })
     
+
+    socket.on("message", data => {
+        createMessage(data);
+    })
+
+    function createMessage(data) {
+        const messageDiv = document.getElementById('messages');
+
+        messageDiv.innerHTML += `
+            <span>
+                <strong>${data.username}</strong> <span>${data.text }</span>
+            </span>
+            </br>
+        `
+    }
+
 </script>
 </html>
